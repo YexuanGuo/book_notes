@@ -16,7 +16,7 @@ class PHPServerd
     public function _init()
     {
         $this->showSystemInfo();
-        print_R($this->checkFilesAccess());
+        print_R($this->settingUmaskCreatFiles());
     }
 
 
@@ -44,6 +44,17 @@ class PHPServerd
         );
     }
 
+
+
+
+    //设置umask然后创建文件测试创建权限
+    public function settingUmaskCreatFiles()
+    {
+        umask(0);
+        fopen('test_umask0',w);
+        umask(2);
+        fopen('test_umask2',w);
+    }
 
 
     //获取当前时间
