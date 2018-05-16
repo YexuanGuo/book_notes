@@ -12,20 +12,86 @@ class PHPServerd
 {
 
 
+    public function __construct()
+    {
+        $this->foreground_colors['black'] = '0;30';
+        $this->foreground_colors['dark_gray'] = '1;30';
+        $this->foreground_colors['blue'] = '0;34';
+        $this->foreground_colors['light_blue'] = '1;34';
+        $this->foreground_colors['green'] = '0;32';
+        $this->foreground_colors['light_green'] = '1;32';
+        $this->foreground_colors['cyan'] = '0;36';
+        $this->foreground_colors['light_cyan'] = '1;36';
+        $this->foreground_colors['red'] = '0;31';
+        $this->foreground_colors['light_red'] = '1;31';
+        $this->foreground_colors['purple'] = '0;35';
+        $this->foreground_colors['light_purple'] = '1;35';
+        $this->foreground_colors['brown'] = '0;33';
+        $this->foreground_colors['yellow'] = '1;33';
+        $this->foreground_colors['light_gray'] = '0;37';
+        $this->foreground_colors['white'] = '1;37';
+
+        $this->background_colors['black'] = '40';
+        $this->background_colors['red'] = '41';
+        $this->background_colors['green'] = '42';
+        $this->background_colors['yellow'] = '43';
+        $this->background_colors['blue'] = '44';
+        $this->background_colors['magenta'] = '45';
+        $this->background_colors['cyan'] = '46';
+        $this->background_colors['light_gray'] = '47';
+    }
+
+    public function displayUI($string, $foreground_color = null, $background_color = null)
+    {
+        $colored_string = "";
+
+        if (isset($this->foreground_colors[$foreground_color])) {
+            $colored_string .= "\033[" . $this->foreground_colors[$foreground_color] . "m";
+        }
+        if (isset($this->background_colors[$background_color])) {
+            $colored_string .= "\033[" . $this->background_colors[$background_color] . "m";
+        }
+
+        $colored_string .= $string . "\033[0m";
+        if (!function_exists('posix_isatty') || posix_isatty(STDOUT)) {
+            echo $colored_string . "\n";
+        }
+    }
+
+    public function safeEcho($msg)
+    {
+        if (!function_exists('posix_isatty') || posix_isatty(STDOUT)) {
+            echo $msg;
+        }
+    }
+
+    public function getForgetTime()
+    {
+        return date("Y-m-d H:i:s", time());
+    }
     //构造函数
     public function _init()
     {
         $this->showSystemInfo();
-        print_R($this->settingUmaskCreatFiles());
+        print_R($this->proccessControl());
     }
 
 
     //一些系统信息
     public function showSystemInfo()
     {
-        $current_proccess_pid = posix_getpid(); //return pid_t val;
 
-        echo str_pad('-',60,'-')."\n Current Proceess PID : $current_proccess_pid  Time:{$this->getCurrentTime()}\n".str_pad('-',60,'-')."\n";
+        $current_proccess_pid = posix_getpid(); //return pid_t val;
+        $hostname = gethostname();
+
+        $display_length = 16;
+
+        $this->displayUI(str_pad('-',60,'-').
+            "\n CurrentTime : ".str_pad('',$display_length + 5 - strlen('CurrentTime')).$this->getForgetTime()."\n".
+            " Current Proceess PID : ".str_pad('',$display_length + 5 - strlen('Current Proceess PID')).$current_proccess_pid."\n".
+            " PHPVersion : ".str_pad('',$display_length + 5 - strlen('PHPVersion')).PHP_VERSION."\n".
+            " Hostname : ".str_pad('',$display_length + 5 - strlen('Hostname')).$hostname."\n".
+            str_pad('-',60,'-')."\n",'green');
     }
 
     //errorno 转换成字符串 var error_no type is int;
@@ -45,11 +111,65 @@ class PHPServerd
     }
 
 
+    //读取FD
+    public function readFD()
+    {
+        $filename = './README.md';
+
+        /*
+        while($line = fgets("README.md","R") !=null)
+        {
+            print_R($line);
+        }*/
+        $filename = fopen('./README.md','r');
+        //返回文件指针读/写的位置
+        $res = ftell($filename);
+
+        print_R($res.PHP_EOL);
+    }
+
+    //时间函数
+    public function getTime()
+    {
+        return array(
+            'getTimeofday'=>gettimeofday(), //弃用,精度更高
+            'localTime'   =>localtime(),
+            'mktime'      =>mktime(),
+            'strftime'    =>strftime('%c'), //格式化时间 strptime 将string时间转换成时间戳
+        );
+    }
+
+
+    //进程管理
+    public function proccessControl()
+    {
+        
+    }
+
+
+
+    //创建临时文件
+    public function createTmpFiles()
+    {
+
+        $temp = tmpfile();
+
+        fwrite($temp, "Testing, testing.");
+
+        //倒回文件的开头
+        rewind($temp);
+
+        //从文件中读取 1k
+        echo fread($temp,1024);
+        //删除文件
+        fclose($temp);
+    }
 
 
     //设置umask然后创建文件测试创建权限
     public function settingUmaskCreatFiles()
     {
+        //Owner 所有权限
         umask(0);
         fopen('test_umask0',w);
         umask(2);
@@ -63,6 +183,7 @@ class PHPServerd
         return date("Y-m-d H:i:s",time());
     }
 
+    //检查文件权限
     public function checkFilesAccess()
     {
         //R_OK 测试读权限
@@ -72,6 +193,14 @@ class PHPServerd
         return array(
             'FIles_Access'=>posix_access($filename,POSIX_R_OK), //成功返回0,失败返回-1
         );
+    }
+    //link,unlink,linkat,unlinkat,remove func
+    public function checkLink()
+    {
+        if(link('./','test_link'))
+        {
+            die('success!');
+        }
     }
     //获取文件信息
     public function getFilesInfo()
