@@ -144,6 +144,45 @@ class PHPServerd
     public function proccessControl()
     {
 
+        $pid = pcntl_fork();
+
+        $worker_proccess_pid = 0;
+        $master_proccess_pid = 0;
+        if($pid < 0)
+        {
+            //出错退出
+            exit('fork fail!');
+        }
+        else if($pid == 0)
+        {
+            //这里是子进程先执行,因为父进程sleep了
+            $worker_proccess_pid = posix_getpid();   //子进程
+            echo sprintf('worker proccess pid = %s \n',$worker_proccess_pid);
+        }
+        else
+        {
+            $master_proccess_pid = posix_getpid();
+            echo sprintf('master proccess pid = %s \n',$master_proccess_pid);
+
+            sleep(10);               //父进程
+        }
+
+        die;
+
+
+        //putenv setenv unsetenv
+
+        return array(
+            'getEnv' =>getenv('LANG'),//返回环境变量信息,例如:HOME USER LANG LC_ALL COLUMNS DATEMSK等等
+            'procccess_info' =>array(
+                'getpid'=>posix_getpid(),//调用进程的进程ID,也是当前进程ID
+                'getppid'=>posix_getppid(),//调用进程的父进程ID
+                'getuid'=>posix_getuid(),//调用进程的实际用户ID
+                'geteuid'=>posix_geteuid(),//调用进程的实际用户ID
+                'getgid' =>posix_getgid(),//调用进程的实际组ID
+                'getegid'=>posix_getegid(),//调用进程的有效组ID
+            ),
+        );
     }
 
 
