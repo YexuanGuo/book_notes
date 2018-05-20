@@ -73,7 +73,7 @@ class PHPServerd
     public function _init()
     {
         $this->showSystemInfo();
-        print_R($this->proccessControl());
+        print_R($this->waitPidFunc());
     }
 
 
@@ -139,6 +139,57 @@ class PHPServerd
         );
     }
 
+    //waitpid & wait & waitid 取得进程终止状态
+
+    public function waitPidFunc()
+    {
+        $pid = pcntl_fork();
+
+        if($pid < 0)
+        {
+            exit('fork error!');
+        }
+        else if($pid === 0)  //子进程,在执行下面fork的时候,这里已经终止了,
+        {
+            $pid2 = pcntl_fork();
+            if($pid2 < 0)
+            {
+                exit('fork error!');
+            }
+            else if($pid2 > 0)
+            {
+                exit(0);
+            }
+            else
+            {
+                /*
+                 * 这里调用Sleep保证在打印父进程ID的时候第一个子进程已经终止,
+                 * fork之后父进程和子进程都可以继续执行,但是无法确定Master,Child哪个先执行,
+                 * 在fork之后如果不使用Sleep第二个子进程休眠的话,那么它可能比Master先执行,
+                 * 所以打印的父进程ID将是创建它的父进程,而不是init进程,父进程也就是挂了的子进程,所以是1
+                 */
+                sleep(10);
+                print_r(sprintf("second child,parent pid = %s",posix_getppid()));
+                exit(0);
+            }
+        }
+        else
+        {
+            /*
+             * WCONTINUED 若实现支持作业控制,那么由pid指定的任一子进程在停止后已经继续,但其并没有报告,则返回其状态
+             * WNOHANG    若由pid指定的子进程并不是立即可用的,则waitpid 不阻塞,此时返回0
+             * WUNTRACED  若某实现支持作业控制,而由pid指定的任一子进程已经处于停止状态,并且其状态自停止以来还从来没报告过
+             * 则返回其状态,WIFSTOPPED 宏确定返回值是否对应于一个停止的子进程。
+             */
+
+            if(pcntl_waitpid($pid,$status,0) != $pid )
+            {
+                exit('waitpid error!');
+            }
+            exit(0);
+        }
+
+    }
 
     //进程管理
     public function proccessControl()
@@ -146,8 +197,6 @@ class PHPServerd
 
         $pid = pcntl_fork();
 
-        $worker_proccess_pid = 0;
-        $master_proccess_pid = 0;
         if($pid < 0)
         {
             //出错退出
