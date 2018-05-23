@@ -109,6 +109,11 @@ class PHPServerd
             exit('error');
         }
 
+        if($status = system('nosuchcommand') <0)
+        {
+            //if not found cmd exit(127)
+            exit('error');
+        }
         echo sprintf('status : %s',$status);
     }
 
