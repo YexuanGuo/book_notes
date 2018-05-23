@@ -69,12 +69,7 @@ class PHPServerd
     {
         return date("Y-m-d H:i:s", time());
     }
-    //构造函数
-    public function _init()
-    {
-        $this->showSystemInfo();
-        print_R($this->waitPidFunc());
-    }
+
 
 
     //一些系统信息
@@ -92,6 +87,29 @@ class PHPServerd
             " PHPVersion : ".str_pad('',$display_length + 5 - strlen('PHPVersion')).PHP_VERSION."\n".
             " Hostname : ".str_pad('',$display_length + 5 - strlen('Hostname')).$hostname."\n".
             str_pad('-',60,'-')."\n",'green');
+    }
+
+    //构造函数
+    public function _init()
+    {
+        $this->showSystemInfo();
+        print_R($this->systemFunc());
+    }
+
+    //System函数
+    public function systemFunc()
+    {
+        if(($status = system("date")) < 0)
+        {
+            exit('error');
+        }
+
+        if($status = system('who; exit 44') < 0)
+        {
+            exit('error');
+        }
+
+        echo sprintf('status : %s',$status);
     }
 
     //errorno 转换成字符串 var error_no type is int;
