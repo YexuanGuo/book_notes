@@ -12,6 +12,8 @@ class PHPServerd
 {
 
 
+    private $pid = null;    //当前进程pid
+
     public function __construct()
     {
         $this->foreground_colors['black'] = '0;30';
@@ -92,9 +94,64 @@ class PHPServerd
     //构造函数
     public function _init()
     {
+        $this->pid = getmypid();
         $this->showSystemInfo();
-        print_R($this->getUidAndGidAndcwd());
+        print_R($this->install_signal());
     }
+
+
+    /*
+     * 安装信号函数,结构体如下
+     * void (*signal(int signo,void(*func)(int)))(int),signo参数是信号名,func是接受到信号要调用的地址
+     * 第三个参数说明:restart_syscalls
+     *指定当信号到达时系统调用重启是否可用。
+     * （译注：经查资料，此参数意为系统调用被信号打断时，系统调用是否从 开始处重新开始，但根据http://bugs.php.net/bug.php?id=52121，此参数存在bug无效。）
+     */
+    public function install_signal()
+    {
+
+        /*
+         * 为了保证php环境的安全性和稳定性;
+         * pcntl拓展在实现signal上使用了“延后执行”的机制;
+         * 因此使用该功能时，必须先使用语句declare(ticks=1);
+         * 否则注册的signal就不会执行了
+         */
+        declare(ticks = 1);
+
+
+        pcntl_signal(SIGUSR1,array($this,'recv_signal'),false);
+        pcntl_signal(SIGUSR2,array($this,'recv_signal'),false);
+        pcntl_signal(SIGINT,array($this,'recv_signal'),false);
+
+        //睡眠两秒是为了测试打印结果,没有其他用处
+        sleep(5);
+
+        //向当前进程发送信号
+//        posix_kill($this->pid,SIGUSR1);
+    }
+
+    //接受到信号处理函数
+    public function recv_signal($signal)
+    {
+
+        echo sprintf("signal is :%s \n",$signal);
+        switch ($signal)
+        {
+            case SIGUSR1:
+                echo (sprintf('收到信号:%s,USR1信号',$signal));
+                break;
+            case SIGUSR2:
+                echo (sprintf('收到信号:%s,USR2信号',$signal));
+                break;
+            case SIGINT:
+                echo (sprintf("收到信号:%s,SIGINT信号,程序退出 \n",$signal));
+                break;
+            default:
+                echo ('没有捕捉到信号!');
+                break;
+        }
+    }
+
 
     //System函数
     public function systemFunc()
@@ -126,7 +183,6 @@ class PHPServerd
     //获取用户ID和用户组ID
     public function getUidAndGidAndcwd()
     {
-
         return array(
             'uid' => posix_getuid(),
             'gid' => posix_getgid(),
