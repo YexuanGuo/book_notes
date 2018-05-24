@@ -93,7 +93,7 @@ class PHPServerd
     public function _init()
     {
         $this->showSystemInfo();
-        print_R($this->systemFunc());
+        print_R($this->getUidAndGidAndcwd());
     }
 
     //System函数
@@ -126,11 +126,23 @@ class PHPServerd
     //获取用户ID和用户组ID
     public function getUidAndGidAndcwd()
     {
+
         return array(
             'uid' => posix_getuid(),
             'gid' => posix_getgid(),
             'cwd' => posix_getcwd(),
+            'pwuid'=>posix_getpwuid(posix_getuid()),    //获取运行程序用户的登录名
+            'pwname'=>posix_getpwnam('guest'),//通过用户名获取指定信息
+            'login_name'=>posix_getlogin(),//获取登录用户名称
+
+            /*PRIO_PROCCESS 表示进程,PRIO_PGRP表示进程组,PRIO_USER表示用户ID*/
+            'proc_nice_val'=>pcntl_getpriority(PRIO_PROCESS),//获取进程nice值,进程调度优先级,可以用pcntl_getpriority设置优先级
+            'usage'=>getrusage(2),  //返回CPU时间以及指示资源使用情况的另外14值
+            'pgid'=>posix_getpgid(posix_getpid()),//进程组ID
+            'sid' =>posix_getsid(posix_getpid()),   //获取会话首进程ID
+
         );
+
     }
 
 
