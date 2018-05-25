@@ -115,6 +115,7 @@ class PHPServerd
          * pcntl拓展在实现signal上使用了“延后执行”的机制;
          * 因此使用该功能时，必须先使用语句declare(ticks=1);
          * 否则注册的signal就不会执行了
+         * ticks=1表示每执行1行PHP代码就回调此函数。实际上大部分时间都没有信号产生，但ticks的函数一直会执行。
          */
         declare(ticks = 1);
 
