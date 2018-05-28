@@ -268,11 +268,11 @@ class PHPServerd
         else
         {
             /*
-             * WCONTINUED 若实现支持作业控制,那么由pid指定的任一子进程在停止后已经继续,但其并没有报告,则返回其状态
+             * WCONTINUED 若实现支持作业控制,那么由pid指定的任一子进程在停止后已经继续,但其并没有报告,则返回其状态.
              * WNOHANG    若由pid指定的子进程并不是立即可用的,则waitpid 不阻塞,此时返回0
              * WUNTRACED  若某实现支持作业控制,而由pid指定的任一子进程已经处于停止状态,并且其状态自停止以来还从来没报告过
              * 则返回其状态,WIFSTOPPED 宏确定返回值是否对应于一个停止的子进程。
-             */ 
+             */
 
             if(pcntl_waitpid($pid,$status,0) != $pid )
             {
