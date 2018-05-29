@@ -115,6 +115,7 @@ class PHPServerd
          * pcntl拓展在实现signal上使用了“延后执行”的机制;
          * 因此使用该功能时，必须先使用语句declare(ticks=1);
          * 否则注册的signal就不会执行了
+         * ticks=1表示每执行1行PHP代码就回调此函数。实际上大部分时间都没有信号产生，但ticks的函数一直会执行。
          */
         declare(ticks = 1);
 
@@ -277,7 +278,7 @@ class PHPServerd
         else
         {
             /*
-             * WCONTINUED 若实现支持作业控制,那么由pid指定的任一子进程在停止后已经继续,但其并没有报告,则返回其状态
+             * WCONTINUED 若实现支持作业控制,那么由pid指定的任一子进程在停止后已经继续,但其并没有报告,则返回其状态.
              * WNOHANG    若由pid指定的子进程并不是立即可用的,则waitpid 不阻塞,此时返回0
              * WUNTRACED  若某实现支持作业控制,而由pid指定的任一子进程已经处于停止状态,并且其状态自停止以来还从来没报告过
              * 则返回其状态,WIFSTOPPED 宏确定返回值是否对应于一个停止的子进程。
