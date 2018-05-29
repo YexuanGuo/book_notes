@@ -119,15 +119,17 @@ class PHPServerd
         declare(ticks = 1);
 
 
+        //false参数这里有一个bug
         pcntl_signal(SIGUSR1,array($this,'recv_signal'),false);
         pcntl_signal(SIGUSR2,array($this,'recv_signal'),false);
         pcntl_signal(SIGINT,array($this,'recv_signal'),false);
+//        pcntl_signal(SIGCLD,array($this,'recv_signal'),false);
 
         //睡眠两秒是为了测试打印结果,没有其他用处
         sleep(5);
 
         //向当前进程发送信号
-//        posix_kill($this->pid,SIGUSR1);
+        posix_kill($this->pid,SIGINT);
     }
 
     //接受到信号处理函数
@@ -146,11 +148,19 @@ class PHPServerd
             case SIGINT:
                 echo (sprintf("收到信号:%s,SIGINT信号,程序退出 \n",$signal));
                 break;
+//            case SIGCLD:
+//                call_user_func('sigcld_received_func','test');
+//                break;
             default:
                 echo ('没有捕捉到信号!');
                 break;
         }
     }
+
+//    public function sigcld_received_func($param)
+//    {
+//        print_R($param);
+//    }
 
 
     //System函数
