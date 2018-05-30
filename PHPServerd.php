@@ -125,12 +125,19 @@ class PHPServerd
         pcntl_signal(SIGUSR2,array($this,'recv_signal'),false);
         pcntl_signal(SIGINT,array($this,'recv_signal'),false);
 //        pcntl_signal(SIGCLD,array($this,'recv_signal'),false);
+        pcntl_signal(SIGALRM,array($this,'recv_signal'),false);
 
         //睡眠两秒是为了测试打印结果,没有其他用处
-        sleep(5);
+//        sleep(2);
 
         //向当前进程发送信号
-        posix_kill($this->pid,SIGINT);
+//        posix_kill($this->pid,SIGALRM);
+
+        //主进程监控子进程退出事件可以用wait系统调用，下一句紧接着是pcntl_signal_dispatch，这样既可以监听到子进程退出，也可以监听到其它信号并及时处理
+        pcntl_alarm(5);
+
+        sleep(20);
+
     }
 
     //接受到信号处理函数
@@ -152,6 +159,9 @@ class PHPServerd
 //            case SIGCLD:
 //                call_user_func('sigcld_received_func','test');
 //                break;
+            case SIGALRM:
+                echo sprintf("收到闹钟信号:%s",$signal);
+                break;
             default:
                 echo ('没有捕捉到信号!');
                 break;
