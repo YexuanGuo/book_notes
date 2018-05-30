@@ -96,7 +96,7 @@ class PHPServerd
     {
         $this->pid = getmypid();
         $this->showSystemInfo();
-        print_R($this->install_signal());
+        print_R($this->getProccessMaskName());
     }
 
 
@@ -134,9 +134,7 @@ class PHPServerd
 //        posix_kill($this->pid,SIGALRM);
 
         //主进程监控子进程退出事件可以用wait系统调用，下一句紧接着是pcntl_signal_dispatch，这样既可以监听到子进程退出，也可以监听到其它信号并及时处理
-        pcntl_alarm(5);
-
-        sleep(20);
+        //pcntl_alarm(5); 5秒钟之后会产生一个闹钟信号,如果在alarm之前调用sleep则收不到信号,因为sleep为系统调用,会打断alarm信号
 
     }
 
@@ -166,6 +164,22 @@ class PHPServerd
                 echo ('没有捕捉到信号!');
                 break;
         }
+    }
+
+
+
+    //设置或检索阻塞信号
+    public function getProccessMaskName()
+    {
+
+        //将SIGHUP信号加入到阻塞信号中
+        pcntl_sigprocmask(SIG_BLOCK, array(SIGHUP));
+        $oldset = array();
+        //将SIGHUP从阻塞信号列表中移除并返回之前的阻塞信号列表。
+        pcntl_sigprocmask(SIG_UNBLOCK, array(SIGHUP), $oldset);
+
+        var_dump($oldset);
+
     }
 
 //    public function sigcld_received_func($param)
