@@ -96,9 +96,18 @@ class PHPServerd
     {
         $this->pid = getmypid();
         $this->showSystemInfo();
-        print_R($this->install_signal());
+        print_R($this->wait_nanosleep_done());
     }
 
+
+    //函数延迟代码执行若干秒和纳秒。
+    public function wait_nanosleep_done()
+    {
+        if (time_nanosleep(3,500000000) === true)
+        {
+            echo "暂停 3 秒半\n";
+        }
+    }
 
     /*
      * 安装信号函数,结构体如下
