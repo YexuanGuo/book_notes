@@ -96,7 +96,7 @@ class PHPServerd
     {
         $this->pid = getmypid();
         $this->showSystemInfo();
-        print_R($this->getProccessMaskName());
+        print_R($this->install_signal());
     }
 
 
@@ -127,11 +127,13 @@ class PHPServerd
 //        pcntl_signal(SIGCLD,array($this,'recv_signal'),false);
         pcntl_signal(SIGALRM,array($this,'recv_signal'),false);
 
+        pcntl_signal(SIGABRT,array($this,'recv_signal'),false);
+
         //睡眠两秒是为了测试打印结果,没有其他用处
 //        sleep(2);
 
         //向当前进程发送信号
-//        posix_kill($this->pid,SIGALRM);
+        posix_kill($this->pid,SIGABRT);
 
         //主进程监控子进程退出事件可以用wait系统调用，下一句紧接着是pcntl_signal_dispatch，这样既可以监听到子进程退出，也可以监听到其它信号并及时处理
         //pcntl_alarm(5); 5秒钟之后会产生一个闹钟信号,如果在alarm之前调用sleep则收不到信号,因为sleep为系统调用,会打断alarm信号
@@ -159,6 +161,9 @@ class PHPServerd
 //                break;
             case SIGALRM:
                 echo sprintf("收到闹钟信号:%s",$signal);
+                break;
+            case SIGABRT:
+                echo (sprintf("收到信号:%s,SIGABRT信号,程序退出 \n",$signal));
                 break;
             default:
                 echo ('没有捕捉到信号!');
