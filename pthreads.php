@@ -18,6 +18,13 @@
  * pthread_cancel(pthread_t tid) 请求取消同一进程中的其他线程,而不是线程终止
  * pthread_cleanup_push(void (*rtn)(void *),void *arg) 清理线程处理任务
  * pthread_cleanup_pop(int execute)
+ *
+ * fork == pthread_create
+ * exit == pthread_exit
+ * waitpid == pthread_join
+ * atexit == pthread_cancel_push
+ * getpid == pthread_self
+ * abort  == pthread_cancel
  */
 
 
