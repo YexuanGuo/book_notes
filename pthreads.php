@@ -9,6 +9,32 @@
 
 
 /*
+ *
+ * 线程安全资源管理器(Thread Safe Resource Manager)
+ * 这是个尝尝被忽视，并很少被人说起的“层”(layer), 她在PHP源码的/TSRM目录下。
+ * 一般的情况下，这个层只会在被指明需要的时候才会被启用(比如,Apache2+worker MPM,一个基于线程的MPM),
+ * 对于Win32下的Apache来说，是基于多线程的，所以这个层在Win32下总是被启用的。
+ *
+ * Zend线程安全(Zend Thread Safety)，当TSRM被启用的时候，就会定义这个名为ZTS的宏。
+ *
+ *
+ * tsrm_ls
+ * TSRM存储器(TSRM Local Storage)，这个是在扩展和Zend中真正被实际使用的指代TSRM存储的变量名。
+ *
+ * 所有的线程共享同一个进程的地址空间，也就说，多个线程共用一个全局变量，这个时候就会产生竞争。
+ * 用C程序员的方式来说:这个时候的全局变量是非线程安全的。
+ *
+ * 和单线程模式兼容，Zend使用了称作“Non_global Globals”的机制。
+ * 这个机制的主要思想就是，对于多线程模型来说，每当一个新的线程被创建，就单独的分配一块内存，这块内存存储着一个全局变量的副本。
+ * 而这块内存会被一个Vector串起来，由Zend统一管理。
+ *
+ * 在ZTS没有被设置的情况下，宏MYEXTENSION_G(V)简单的被等价于全局变量myextension_globals.v，而对于启用了TSRM的情况，
+ * MYEXTENSION_G(V)会被转化成在Vector中根据my_extension_globals_id来查找到要访问的全局变量。
+ * 现在，只要你在你的代码中，使用MYEXTENSION_G来访问你的全局变量，并在要使用这个全局变量的函数参数列表中添加上TSRMLS_CC，
+ * 那么就能保证在单线程和多线程模型下的线程安全，和代码一致性。
+ *
+ * 以上Via:https://blog.csdn.net/laruence/article/details/2761219
+ *
  * pthread_equal(pthread_t,pthread_t) 成功返回非0,否则返回0 ,获取线程标识的数据结构
  * pthread_self(void) 获取当前线程ID
  * 创建线程
