@@ -51,14 +51,20 @@
  * pthread_mutex_trylock 尝试对互斥变量进行加锁
  *
  *
- *
- *
  * fork == pthread_create
  * exit == pthread_exit
  * waitpid == pthread_join
  * atexit == pthread_cancel_push
  * getpid == pthread_self
  * abort  == pthread_cancel
+ *
+ *
+ *
+ * run()：此方法是一个抽象方法，每个线程都要实现此方法，线程开始运行后，此方法中的代码会自动执行；
+ * start()：在主线程内调用此方法以开始运行一个线程；
+ * join()：各个线程相对于主线程都是异步执行，调用此方法会等待线程执行结束；
+ * kill()：强制线程结束；
+ * isRunning()：返回线程的运行状态，线程正在执行run()方法的代码时会返回 true；
  */
 
 
