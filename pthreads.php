@@ -19,6 +19,10 @@
  * pthread_cleanup_push(void (*rtn)(void *),void *arg) 清理线程处理任务
  * pthread_cleanup_pop(int execute)
  * pthread_detach(pthread_t tid) 分离线程
+ * pthread_mutex_init ()  互斥变量
+ * pthread_mutex_destroy()销毁互斥变量
+ * pthread_mutex_unlocak() 互斥变量解锁
+ * pthread_mutex_trylock 尝试对互斥变量进行加锁
  *
  *
  *
