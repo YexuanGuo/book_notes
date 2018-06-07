@@ -28,12 +28,14 @@ for($i=1;$i<=$thread_count;$i++)
 {
     $thread = new pthreads_statistics($i);
 
+    //主线程内调用此方法以开始运行一个线程；
     $thread->start();
 
     $threads[] = $thread;
 
 }
 
+//等待子线程结束
 foreach ($threads as $thread)
 {
     $thread->join();
