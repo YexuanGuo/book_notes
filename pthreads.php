@@ -67,13 +67,31 @@
  * isRunning()：返回线程的运行状态，线程正在执行run()方法的代码时会返回 true；
  */
 
+$argv = 'TestCmd';
 
-
-$thread = new class extends Thread
+$thread = new class($argv) extends Thread
 {
+    protected $arg;
+
+    public function __construct($argv)
+    {
+        $this->arg = $argv;
+    }
+
+    //当调用start方法时，该对象的run方法中的代码将在独立线程中异步执行。
     public function run()
     {
-        echo "Hello World\n";
+        echo "Hello World,Arg is :{$this->arg}\n";
     }
 };
-$thread->start() && $thread->join();
+
+//直接调用start方法，而没有调用join。主线程不会等待，而是在输出main thread。子线程等待3秒才输出Hello World。
+if($thread->start())
+{
+    //join方法的作用是让当前主线程等待该线程执行完毕,确认被join的线程执行结束，和线程执行顺序没关系。
+    //也就是当主线程需要子线程的处理结果,主线程需要等待子线程执行完毕,拿到子线程的结果,然后处理后续代码。
+    $thread->join();
+
+    //这里是子线程执行完毕之后处理的代码
+    echo "Main Thread;\n";
+}
