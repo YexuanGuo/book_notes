@@ -81,7 +81,8 @@ $thread = new class($argv) extends Thread
     //当调用start方法时，该对象的run方法中的代码将在独立线程中异步执行。
     public function run()
     {
-        echo "Hello World,Arg is :{$this->arg}\n";
+        $Thread_id = Thread::getCurrentThreadId();
+        echo "Hello World,Arg is :{$this->arg},ThreadId:{$Thread_id}\n";
     }
 };
 
